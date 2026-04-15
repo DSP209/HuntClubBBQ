@@ -7,28 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-analytics.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, addDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- FIREBASE CONFIGURATION ---
-        //const firebaseConfig = JSON.parse(__firebase_config);
-        const firebaseConfig = {
-        apiKey: "AIzaSyCV_-ef3Zptteo9I9EIMj9RuLQGmmziHLA",
-        authDomain: "huntclubbbq-3b864.firebaseapp.com",
-        projectId: "huntclubbbq-3b864",
-        storageBucket: "huntclubbbq-3b864.firebasestorage.app",
-        messagingSenderId: "347623032025",
-        appId: "1:347623032025:web:0f3c9c75b4a527b15ceac8",
-        measurementId: "G-L3DQ1KCT5T"
-      };
+        const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'hunt-club-bbq-2026';
-        const analytics = getAnalytics(app);
 
         // State
         let currentUser = null;
@@ -55,21 +43,32 @@
         const addCustomBtn = document.getElementById('add-custom-btn');
 
         async function init() {
+            // First, set up the auth listener
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    setupListeners();
+                }
+            });
+
+            // Second, attempt authentication
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
-                
-                onAuthStateChanged(auth, (user) => {
-                    currentUser = user;
-                    if (user) {
-                        setupListeners();
-                    }
-                });
             } catch (error) {
                 console.error("Initialization error:", error);
+                // Final fallback for local development or session issues
+                if (error.code === 'auth/configuration-not-found') {
+                    console.warn("Auth configuration issue. Retrying anonymous sign-in...");
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (retryError) {
+                        console.error("Retry failed:", retryError);
+                    }
+                }
             }
         }
 
@@ -81,20 +80,19 @@
             onSnapshot(attendeesRef, (snapshot) => {
                 attendees = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderAttendees();
-            });
+            }, (err) => console.error("Firestore listener error:", err));
 
             // Listen for custom added items
             const customItemsRef = collection(db, 'artifacts', appId, 'public', 'data', 'custom_items');
             onSnapshot(customItemsRef, (snapshot) => {
                 customItems = snapshot.docs.map(doc => doc.data());
                 renderPotluckItems();
-            });
+            }, (err) => console.error("Firestore items listener error:", err));
         }
 
         function renderPotluckItems() {
             itemsContainer.innerHTML = '';
             
-            // Merge defaults with custom items
             const categories = JSON.parse(JSON.stringify(defaultCategories));
             customItems.forEach(item => {
                 if (categories[item.category]) {
@@ -156,9 +154,8 @@
             totalGuestsEl.textContent = totalCount;
         }
 
-        // Add a completely new item to the shared pool
         addCustomBtn.onclick = async (e) => {
-            e.preventDefault(); // Prevent form submission if triggered inside form
+            e.preventDefault(); 
             const name = customItemInput.value.trim();
             const category = customCategorySelect.value;
             if (!name || !currentUser) return;
@@ -211,7 +208,6 @@
             }
         };
 
-        // Share functionality
         shareBtn.onclick = async () => {
             const shareData = {
                 title: 'Hunt Club BBQ RSVP',
@@ -223,14 +219,13 @@
                 if (navigator.share) {
                     await navigator.share(shareData);
                 } else {
-                    // Fallback to clipboard
                     const dummy = document.createElement('input');
                     document.body.appendChild(dummy);
                     dummy.value = window.location.href;
                     dummy.select();
                     document.execCommand('copy');
                     document.body.removeChild(dummy);
-                    showToast("Link copied to clipboard! Send it to the family.");
+                    showToast("Link copied to clipboard!");
                 }
             } catch (err) {
                 console.log('Error sharing:', err);
@@ -280,8 +275,6 @@
     </header>
 
     <main class="max-w-6xl mx-auto px-4 mt-12 grid lg:grid-cols-12 gap-8">
-        
-        <!-- Attendance Side (Left) -->
         <div class="lg:col-span-7">
             <div class="bg-white rounded-2xl shadow-xl p-8 border-t-8 border-orange-500 min-h-[400px]">
                 <div class="flex justify-between items-center mb-8">
@@ -294,19 +287,14 @@
                         <span class="text-[10px] uppercase tracking-tighter opacity-70">Total Guests</span>
                     </div>
                 </div>
-                
-                <div id="attendee-list" class="max-h-[750px] overflow-y-auto pr-2 custom-scrollbar">
-                    <!-- Attendees populated by JS -->
-                </div>
+                <div id="attendee-list" class="max-h-[750px] overflow-y-auto pr-2 custom-scrollbar"></div>
             </div>
         </div>
 
-        <!-- Unified RSVP & Add Item Side (Right) -->
         <div class="lg:col-span-5">
             <div class="bg-white rounded-2xl shadow-xl p-8 border-t-8 border-orange-500 sticky top-8">
                 <form id="signup-form" class="space-y-6">
                     <h2 class="text-2xl font-extrabold text-gray-800">Count Me In!</h2>
-                    
                     <div class="grid grid-cols-2 gap-4">
                         <div class="col-span-1">
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-1 tracking-widest">Your Name</label>
@@ -317,51 +305,34 @@
                             <input type="number" name="guestCount" value="0" min="0" class="w-full border p-3 rounded-xl text-sm outline-none focus:ring-4 focus:ring-orange-100 border-gray-100 transition-all bg-gray-50/50">
                         </div>
                     </div>
-
                     <div>
-                        <div class="flex justify-between items-end mb-3">
-                            <label class="text-sm font-bold text-gray-700">Check what you're bringing:</label>
-                        </div>
-                        <div id="items-container" class="h-64 overflow-y-auto border border-gray-100 p-4 rounded-2xl bg-gray-50/30 custom-scrollbar mb-4">
-                            <!-- Categorized items populated by JS -->
-                        </div>
+                        <label class="text-sm font-bold text-gray-700 block mb-3">Check what you're bringing:</label>
+                        <div id="items-container" class="h-64 overflow-y-auto border border-gray-100 p-4 rounded-2xl bg-gray-50/30 custom-scrollbar mb-4"></div>
                     </div>
-
-                    <!-- Integrated "Something Missing" Section -->
                     <div class="bg-orange-50/50 rounded-xl p-4 border border-orange-100 mb-6">
                         <h3 class="text-[10px] font-black text-orange-800 uppercase mb-3 tracking-widest flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                             Add New Potluck Item
                         </h3>
                         <div class="space-y-2">
-                            <input type="text" id="custom-item-name" placeholder="Item name (e.g. Audrey's Famous Cookies)" class="w-full border p-2.5 rounded-lg text-xs border-orange-200 outline-none focus:ring-4 focus:ring-orange-200/30 bg-white">
+                            <input type="text" id="custom-item-name" placeholder="Item name" class="w-full border p-2.5 rounded-lg text-xs border-orange-200 outline-none focus:ring-4 focus:ring-orange-200/30 bg-white">
                             <div class="flex gap-2">
                                 <select id="custom-item-category" class="flex-1 border p-2.5 rounded-lg text-xs border-orange-200 outline-none bg-white">
                                     <option value="Main Dishes">Main Dish</option>
                                     <option value="Side Dishes" selected>Side Dish</option>
                                     <option value="Accessories & Tableware">Accessories</option>
                                 </select>
-                                <button id="add-custom-btn" type="button" class="bg-orange-600 text-white px-4 rounded-lg font-bold text-xs hover:bg-orange-700 transition-all active:scale-95 shadow-md shadow-orange-200">
-                                    Add to List
-                                </button>
+                                <button id="add-custom-btn" type="button" class="bg-orange-600 text-white px-4 rounded-lg font-bold text-xs hover:bg-orange-700 transition-all active:scale-95 shadow-md shadow-orange-200">Add</button>
                             </div>
                         </div>
                     </div>
-
-                    <button type="submit" class="w-full bg-orange-600 text-white font-black py-5 rounded-2xl hover:bg-orange-700 transition-all active:scale-95 shadow-xl shadow-orange-200 uppercase tracking-widest text-lg">
-                        Confirm RSVP
-                    </button>
-                    
-                    <p class="text-[10px] text-gray-400 text-center italic mt-4">
-                        Family Reminder: BYOB (Bring Your Own Beverages)!
-                    </p>
+                    <button type="submit" class="w-full bg-orange-600 text-white font-black py-5 rounded-2xl hover:bg-orange-700 transition-all active:scale-95 shadow-xl shadow-orange-200 uppercase tracking-widest text-lg">Confirm RSVP</button>
+                    <p class="text-[10px] text-gray-400 text-center italic mt-4">Family Reminder: BYOB!</p>
                 </form>
             </div>
         </div>
     </main>
 
-    <!-- Notification Toast -->
     <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur-md text-white px-10 py-4 rounded-2xl text-xs font-bold shadow-2xl z-50 animate-bounce border border-white/10"></div>
-
 </body>
 </html>
