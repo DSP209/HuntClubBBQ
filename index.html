@@ -4,90 +4,108 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hunt Club BBQ/Picnic</title>
+
+<!-- ============================================================
+  FIREBASE SETUP — DO THIS ONCE (~5 minutes)
+  ============================================================
+  1. Go to https://console.firebase.google.com
+  2. Click "Add project" → name it (e.g. "hunt-club-bbq") → Continue
+  3. Disable Google Analytics if prompted → Create project
+  4. In the left sidebar click "Build" → "Realtime Database" → Create database
+     → Choose a region → "Start in test mode" → Enable
+  5. Click the gear icon ⚙ (top-left) → "Project settings"
+     → Scroll to "Your apps" → click </> (Web) → register app (any nickname)
+     → Copy the firebaseConfig values shown
+  6. Paste your values into FIREBASE_CONFIG below (replace each "YOUR_..." placeholder)
+  7. Save this file, rename to index.html, and push to your GitHub Pages repo
+  ============================================================ -->
+
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4ef; color: #1a1a18; min-height: 100vh; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4ef;color:#1a1a18;min-height:100vh}
 
-  .header { background: #3B6D11; color: #fff; padding: 2rem 1rem 1.5rem; text-align: center; }
-  .header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
-  .header .subtitle { font-size: 1.1rem; opacity: 0.85; margin-top: 0.4rem; font-weight: 400; }
-  .header .flame { font-size: 2rem; }
+  .header{background:#3B6D11;color:#fff;padding:2rem 1rem 1.5rem;text-align:center}
+  .header h1{font-size:2rem;font-weight:700;letter-spacing:-0.5px}
+  .header .subtitle{font-size:1.1rem;opacity:.85;margin-top:.4rem}
+  .flame{font-size:2rem}
 
-  .container { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .container{max-width:860px;margin:0 auto;padding:1.5rem 1rem 3rem}
 
-  .summary-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
-  .stat-card { background: #fff; border-radius: 10px; border: 0.5px solid #d3d1c7; padding: 1rem 1.25rem; }
-  .stat-card .label { font-size: 12px; color: #5F5E5A; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
-  .stat-card .value { font-size: 28px; font-weight: 600; color: #3B6D11; }
-  .stat-card .sub { font-size: 12px; color: #888780; margin-top: 2px; }
+  .banner{background:#faeeda;border:1px solid #EF9F27;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:13px;color:#412402;line-height:1.7}
+  .banner strong{display:block;font-size:14px;margin-bottom:6px;color:#633806}
+  .banner code{background:#fff;padding:1px 5px;border-radius:4px;font-family:monospace;font-size:12px;border:.5px solid #EF9F27}
+  .banner ol{margin:8px 0 0 18px}
 
-  .card { background: #fff; border-radius: 12px; border: 0.5px solid #d3d1c7; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
-  .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: #27500A; display: flex; align-items: center; gap: 8px; }
-  .card h2 .ico { font-size: 18px; }
+  .summary-bar{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+  .stat-card{background:#fff;border-radius:10px;border:.5px solid #d3d1c7;padding:1rem 1.25rem}
+  .stat-card .lbl{font-size:12px;color:#5F5E5A;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+  .stat-card .val{font-size:28px;font-weight:600;color:#3B6D11}
+  .stat-card .sub{font-size:12px;color:#888780;margin-top:2px}
 
-  .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .form-row input, .form-row select { flex: 1; min-width: 140px; padding: 9px 12px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 14px; background: #fff; color: #1a1a18; outline: none; transition: border-color 0.15s; }
-  .form-row input:focus, .form-row select:focus { border-color: #3B6D11; }
-  .form-row input[type=number] { max-width: 100px; }
-  .btn { padding: 9px 18px; border-radius: 8px; border: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s, transform 0.1s; }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: #3B6D11; color: #fff; }
-  .btn-primary:hover { background: #27500A; }
-  .btn-secondary { background: #f1efe8; color: #3B6D11; border: 0.5px solid #c0dd97; }
-  .btn-secondary:hover { background: #c0dd97; }
-  .btn-danger { background: #fff; color: #A32D2D; border: 0.5px solid #f0909595; font-size: 12px; padding: 4px 10px; }
-  .btn-danger:hover { background: #fcebeb; }
-  .btn-share { background: #185FA5; color: #fff; }
-  .btn-share:hover { background: #0C447C; }
-  .btn-sm { padding: 6px 14px; font-size: 13px; }
+  .card{background:#fff;border-radius:12px;border:.5px solid #d3d1c7;padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+  .card h2{font-size:1rem;font-weight:600;margin-bottom:1rem;color:#27500A;display:flex;align-items:center;gap:8px}
 
-  .group-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #888780; margin: 1rem 0 0.5rem; padding-bottom: 4px; border-bottom: 0.5px solid #e8e6de; }
-  .group-label:first-of-type { margin-top: 0; }
+  .sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+  .sec-hdr h2{margin-bottom:0}
 
-  .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
-  .item-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; border: 0.5px solid #d3d1c7; background: #fafaf7; transition: background 0.12s, border-color 0.12s; cursor: pointer; }
-  .item-row:hover { background: #f1efe8; border-color: #b4b2a9; }
-  .item-row.claimed { background: #eaf3de; border-color: #97c459; }
-  .item-row label { flex: 1; font-size: 14px; cursor: pointer; }
-  .item-row input[type=checkbox] { accent-color: #3B6D11; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
-  .claimed-by { font-size: 11px; color: #3B6D11; display: block; margin-top: 1px; font-weight: 500; }
+  .live-wrap{display:flex;align-items:center;gap:5px;font-size:12px;color:#5F5E5A}
+  .dot{width:8px;height:8px;border-radius:50%;background:#97c459;animation:pulse 2s infinite}
+  .dot.off{background:#E24B4A;animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-  .attendees-list { display: flex; flex-direction: column; gap: 8px; }
-  .attendee-row { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; background: #f5f4ef; border: 0.5px solid #d3d1c7; }
-  .avatar { width: 34px; height: 34px; border-radius: 50%; background: #c0dd97; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #27500A; flex-shrink: 0; }
-  .attendee-info { flex: 1; }
-  .attendee-name { font-size: 14px; font-weight: 500; }
-  .attendee-guests { font-size: 12px; color: #5F5E5A; }
-  .attendee-items-list { font-size: 11px; color: #3B6D11; margin-top: 2px; }
+  .form-row{display:flex;gap:10px;flex-wrap:wrap}
+  .form-row input,.form-row select{flex:1;min-width:140px;padding:9px 12px;border:.5px solid #b4b2a9;border-radius:8px;font-size:14px;background:#fff;color:#1a1a18;outline:none;transition:border-color .15s}
+  .form-row input:focus,.form-row select:focus{border-color:#3B6D11}
 
-  .add-item-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-  .add-item-row input, .add-item-row select { flex: 1; min-width: 120px; padding: 8px 12px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a18; outline: none; }
-  .add-item-row input:focus, .add-item-row select:focus { border-color: #3B6D11; }
+  .btn{padding:9px 18px;border-radius:8px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s,transform .1s}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:#3B6D11;color:#fff}
+  .btn-primary:hover{background:#27500A}
+  .btn-secondary{background:#f1efe8;color:#3B6D11;border:.5px solid #c0dd97}
+  .btn-secondary:hover{background:#c0dd97}
+  .btn-danger{background:#fff;color:#A32D2D;border:.5px solid rgba(224,75,74,.35);font-size:12px;padding:4px 10px}
+  .btn-danger:hover{background:#fcebeb}
+  .btn-share{background:#185FA5;color:#fff}
+  .btn-share:hover{background:#0C447C}
+  .btn-sm{padding:6px 14px;font-size:13px}
+  .switch-btn{font-size:12px;color:#185FA5;cursor:pointer;text-decoration:underline;background:none;border:none;margin-left:6px}
 
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #27500A; color: #fff; padding: 10px 22px; border-radius: 20px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; }
-  .toast.show { opacity: 1; }
+  .group-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#888780;margin:1rem 0 .5rem;padding-bottom:4px;border-bottom:.5px solid #e8e6de}
 
-  .share-area { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
-  .share-url { flex: 1; padding: 8px 12px; border: 0.5px solid #b4b2a9; border-radius: 8px; font-size: 12px; background: #f5f4ef; color: #5F5E5A; font-family: monospace; word-break: break-all; min-width: 0; }
+  .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+  .item-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;border:.5px solid #d3d1c7;background:#fafaf7;cursor:pointer;transition:background .12s,border-color .12s}
+  .item-row:hover{background:#f1efe8;border-color:#b4b2a9}
+  .item-row.claimed{background:#eaf3de;border-color:#97c459}
+  .item-row label{flex:1;font-size:14px;cursor:pointer;line-height:1.4}
+  .item-row input[type=checkbox]{accent-color:#3B6D11;width:16px;height:16px;cursor:pointer;flex-shrink:0}
+  .claimed-by{font-size:11px;color:#3B6D11;display:block;margin-top:1px;font-weight:500}
 
-  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
-  .modal-bg.open { display: flex; }
-  .modal { background: #fff; border-radius: 14px; padding: 1.75rem; max-width: 420px; width: 90%; }
-  .modal h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #27500A; }
-  .modal .form-row { margin-bottom: 10px; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1rem; }
+  .attendees-list{display:flex;flex-direction:column;gap:8px}
+  .att-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#f5f4ef;border:.5px solid #d3d1c7}
+  .avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#27500A;flex-shrink:0}
+  .att-info{flex:1}
+  .att-name{font-size:14px;font-weight:500}
+  .att-guests{font-size:12px;color:#5F5E5A}
+  .att-items{font-size:11px;color:#3B6D11;margin-top:2px}
 
-  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-  .section-header h2 { margin-bottom: 0; }
+  .add-item-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .add-item-row input,.add-item-row select{flex:1;min-width:120px;padding:8px 12px;border:.5px solid #b4b2a9;border-radius:8px;font-size:13px;background:#fff;color:#1a1a18;outline:none}
+  .add-item-row input:focus,.add-item-row select:focus{border-color:#3B6D11}
 
-  .current-user-badge { display: inline-flex; align-items: center; gap: 6px; background: #eaf3de; color: #3B6D11; border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 500; border: 0.5px solid #97c459; margin-left: 8px; }
-  .switch-btn { font-size: 12px; color: #185FA5; cursor: pointer; text-decoration: underline; background: none; border: none; margin-left: 6px; }
+  .share-area{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .share-url{flex:1;padding:8px 12px;border:.5px solid #b4b2a9;border-radius:8px;font-size:12px;background:#f5f4ef;color:#5F5E5A;font-family:monospace;word-break:break-all;min-width:0}
 
-  @media (max-width: 500px) {
-    .summary-bar { grid-template-columns: 1fr 1fr; }
-    .stat-card .value { font-size: 22px; }
-    .items-grid { grid-template-columns: 1fr 1fr; }
-    .header h1 { font-size: 1.5rem; }
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#27500A;color:#fff;padding:10px 22px;border-radius:20px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;white-space:nowrap}
+  .toast.show{opacity:1}
+
+  .loading{text-align:center;padding:2.5rem;color:#888780;font-size:14px}
+  .spinner{width:28px;height:28px;border:2px solid #d3d1c7;border-top-color:#3B6D11;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @media(max-width:500px){
+    .stat-card .val{font-size:22px}
+    .items-grid{grid-template-columns:1fr 1fr}
+    .header h1{font-size:1.5rem}
   }
 </style>
 </head>
@@ -101,350 +119,372 @@
 
 <div class="container">
 
-  <!-- Summary Stats -->
-  <div class="summary-bar">
-    <div class="stat-card">
-      <div class="label">Total Attending</div>
-      <div class="value" id="totalPeople">0</div>
-      <div class="sub" id="attendeeSub">0 members + 0 guests</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Items Covered</div>
-      <div class="value" id="itemsCovered">0 / 0</div>
-      <div class="sub" id="itemsSub">items claimed</div>
-    </div>
+  <div class="banner" id="setupBanner" style="display:none">
+    <strong>⚠️ Firebase not configured — running in local demo mode</strong>
+    To enable real-time sync across all users, open this file in a text editor, find
+    <code>FIREBASE_CONFIG</code> near the top of the &lt;script&gt; block, and replace
+    each <code>YOUR_...</code> placeholder with your Firebase project values.
+    See the comment block at the very top of the file for step-by-step instructions.
   </div>
 
-  <!-- Who are you? -->
-  <div class="card" id="userSelCard">
-    <h2><span class="ico">👤</span> Who are you?</h2>
-    <div id="currentUserDisplay" style="display:none; margin-bottom:12px; font-size:14px; color:#5F5E5A;">
-      Signed in as: <span id="currentUserName" style="font-weight:600; color:#27500A;"></span>
-      <button class="switch-btn" onclick="clearCurrentUser()">switch user</button>
-    </div>
-    <div id="existingUserSelect" style="display:none; margin-bottom:12px;">
-      <div class="form-row">
-        <select id="selectExistingUser">
-          <option value="">-- Select your name --</option>
-        </select>
-        <button class="btn btn-primary" onclick="loginExisting()">Select</button>
+  <div class="loading" id="loadingDiv">
+    <div class="spinner"></div>
+    Connecting…
+  </div>
+
+  <div id="app" style="display:none">
+
+    <div class="summary-bar">
+      <div class="stat-card">
+        <div class="lbl">Total Attending</div>
+        <div class="val" id="statPeople">0</div>
+        <div class="sub" id="statPeopleSub">0 members + 0 guests</div>
       </div>
-      <div style="margin-top:8px; font-size:13px; color:#888780;">Or add yourself as a new attendee below &darr;</div>
-    </div>
-    <div class="form-row" id="addUserForm">
-      <input type="text" id="newUserName" placeholder="Your name" maxlength="40" />
-      <input type="number" id="newUserGuests" placeholder="# guests" min="0" max="20" value="0" />
-      <button class="btn btn-primary" onclick="addUser()">Join the party!</button>
-    </div>
-  </div>
-
-  <!-- Items to Bring -->
-  <div class="card">
-    <div class="section-header">
-      <h2><span class="ico">🍔</span> What's on the menu?</h2>
-      <span id="signedInAs" style="font-size:12px; color:#888780;"></span>
-    </div>
-
-    <div id="itemsContainer"></div>
-
-    <div style="margin-top:1.25rem; border-top: 0.5px solid #e8e6de; padding-top:1rem;">
-      <div style="font-size:13px; font-weight:500; color:#5F5E5A; margin-bottom:8px;">Add a custom item:</div>
-      <div class="add-item-row">
-        <input type="text" id="customItemName" placeholder="Item name (e.g. Potato salad)" maxlength="50" />
-        <select id="customItemGroup">
-          <option value="Main Dishes">Main Dishes</option>
-          <option value="Side Dishes" selected>Side Dishes</option>
-          <option value="Condiments & Extras">Condiments & Extras</option>
-          <option value="Supplies & Accessories">Supplies & Accessories</option>
-          <option value="Desserts">Desserts</option>
-        </select>
-        <button class="btn btn-secondary btn-sm" onclick="addCustomItem()">+ Add item</button>
+      <div class="stat-card">
+        <div class="lbl">Items Covered</div>
+        <div class="val" id="statItems">0 / 0</div>
+        <div class="sub" id="statItemsSub">items claimed</div>
       </div>
     </div>
-  </div>
 
-  <!-- Attendees -->
-  <div class="card">
-    <h2><span class="ico">🎉</span> Who's coming?</h2>
-    <div class="attendees-list" id="attendeesList">
-      <div style="font-size:14px; color:#888780;">No one signed up yet — be the first!</div>
+    <!-- Identity card -->
+    <div class="card">
+      <div class="sec-hdr">
+        <h2>👤 Who are you?</h2>
+        <div class="live-wrap"><span class="dot" id="liveDot"></span><span id="liveLabel">Live</span></div>
+      </div>
+      <div id="curUserRow" style="display:none;margin-bottom:12px;font-size:14px;color:#5F5E5A">
+        Signed in as: <strong id="curUserName" style="color:#27500A"></strong>
+        <button class="switch-btn" onclick="clearUser()">switch user</button>
+      </div>
+      <div id="pickUserRow" style="display:none;margin-bottom:12px">
+        <div class="form-row">
+          <select id="pickSel"><option value="">-- Select your name --</option></select>
+          <button class="btn btn-primary" onclick="loginExisting()">Select</button>
+        </div>
+        <div style="margin-top:8px;font-size:13px;color:#888780">Or add yourself as a new attendee below ↓</div>
+      </div>
+      <div class="form-row" id="addUserRow">
+        <input type="text" id="newName" placeholder="Your name" maxlength="40" onkeydown="if(event.key==='Enter')addUser()" />
+        <input type="number" id="newGuests" placeholder="# guests" min="0" max="30" value="0" style="max-width:100px" />
+        <button class="btn btn-primary" onclick="addUser()">Join the party!</button>
+      </div>
     </div>
-  </div>
 
-  <!-- Share -->
-  <div class="card">
-    <h2><span class="ico">🔗</span> Share this page</h2>
-    <p style="font-size:13px; color:#5F5E5A; margin-bottom:10px;">Send this link so others can join and pick items to bring.</p>
-    <div class="share-area">
-      <div class="share-url" id="shareUrl"></div>
-      <button class="btn btn-share" onclick="copyShareLink()">Copy Link</button>
+    <!-- Items card -->
+    <div class="card">
+      <div class="sec-hdr">
+        <h2>🍔 What's on the menu?</h2>
+        <span id="itemsHint" style="font-size:12px;color:#888780"></span>
+      </div>
+      <div id="itemsContainer"></div>
+      <div style="margin-top:1.25rem;border-top:.5px solid #e8e6de;padding-top:1rem">
+        <div style="font-size:13px;font-weight:500;color:#5F5E5A;margin-bottom:8px">Add a custom item:</div>
+        <div class="add-item-row">
+          <input type="text" id="customName" placeholder="Item name (e.g. Potato salad)" maxlength="50" onkeydown="if(event.key==='Enter')addCustomItem()" />
+          <select id="customGroup">
+            <option value="Main Dishes">Main Dishes</option>
+            <option value="Side Dishes" selected>Side Dishes</option>
+            <option value="Condiments & Extras">Condiments & Extras</option>
+            <option value="Desserts">Desserts</option>
+            <option value="Supplies & Accessories">Supplies & Accessories</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="addCustomItem()">+ Add item</button>
+        </div>
+      </div>
     </div>
-  </div>
 
+    <!-- Attendees card -->
+    <div class="card">
+      <h2>🎉 Who's coming?</h2>
+      <div class="attendees-list" id="attendeesList">
+        <div style="font-size:14px;color:#888780">No one signed up yet — be the first!</div>
+      </div>
+    </div>
+
+    <!-- Share card -->
+    <div class="card">
+      <h2>🔗 Share this page</h2>
+      <p style="font-size:13px;color:#5F5E5A;margin-bottom:10px">Send this link — everyone sees the same live list in real time.</p>
+      <div class="share-area">
+        <div class="share-url" id="shareUrl"></div>
+        <button class="btn btn-share" onclick="copyLink()">Copy Link</button>
+      </div>
+    </div>
+
+  </div><!-- /app -->
 </div>
 
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-const STORAGE_KEY = 'hunt_club_bbq_2026';
+// ── FIREBASE CONFIG ──────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey:            ""AIzaSyCV_-ef3Zptteo9I9EIMj9RuLQGmmziHLA"",
+  authDomain:        ""huntclubbbq-3b864.firebaseapp.com"",
+  databaseURL:       "https://huntclubbbq-3b864-default-rtdb.firebaseio.com",
+  projectId:         "huntclubbbq-3b864",
+  storageBucket:     "huntclubbbq-3b864.firebasestorage.app",
+  messagingSenderId: "347623032025",
+  appId:             "1:347623032025:web:7d18932090ba0ec85ceac8"
+};
+// ────────────────────────────────────────────────────────────
+
+const CONFIGURED = !FIREBASE_CONFIG.apiKey.includes('YOUR_');
+const DB_PATH    = 'hunt_club_bbq_2026';
+const GROUP_ORDER = ['Main Dishes','Side Dishes','Condiments & Extras','Desserts','Supplies & Accessories'];
 
 const DEFAULT_ITEMS = [
-  { id: 'i1', name: 'Hot dogs', group: 'Main Dishes', claimedBy: null },
-  { id: 'i2', name: 'Hamburger patties', group: 'Main Dishes', claimedBy: null },
-  { id: 'i3', name: 'Veggie burgers', group: 'Main Dishes', claimedBy: null },
-  { id: 'i4', name: 'Buns (hot dog & hamburger)', group: 'Main Dishes', claimedBy: null },
-  { id: 'i5', name: 'Grilled chicken', group: 'Main Dishes', claimedBy: null },
-  { id: 'i6', name: 'Corn on the cob', group: 'Side Dishes', claimedBy: null },
-  { id: 'i7', name: 'Coleslaw', group: 'Side Dishes', claimedBy: null },
-  { id: 'i8', name: 'Baked beans', group: 'Side Dishes', claimedBy: null },
-  { id: 'i9', name: 'Pasta salad', group: 'Side Dishes', claimedBy: null },
-  { id: 'i10', name: 'Green salad', group: 'Side Dishes', claimedBy: null },
-  { id: 'i11', name: 'Chips & dip', group: 'Side Dishes', claimedBy: null },
-  { id: 'i12', name: 'Watermelon', group: 'Side Dishes', claimedBy: null },
-  { id: 'i13', name: 'Ketchup', group: 'Condiments & Extras', claimedBy: null },
-  { id: 'i14', name: 'Mustard', group: 'Condiments & Extras', claimedBy: null },
-  { id: 'i15', name: 'Relish', group: 'Condiments & Extras', claimedBy: null },
-  { id: 'i16', name: 'Mayonnaise', group: 'Condiments & Extras', claimedBy: null },
-  { id: 'i17', name: 'BBQ sauce', group: 'Condiments & Extras', claimedBy: null },
-  { id: 'i18', name: 'Sliced cheese', group: 'Condiments & Extras', claimedBy: null },
-  { id: 'i19', name: 'Sliced onions & tomatoes', group: 'Condiments & Extras', claimedBy: null },
-  { id: 'i20', name: 'Paper plates & bowls', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i21', name: 'Plastic utensils', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i22', name: 'Napkins', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i23', name: 'Cups', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i24', name: 'Aluminum foil', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i25', name: 'Charcoal / lighter fluid', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i26', name: 'Bug spray', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i27', name: 'Sunscreen', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i28', name: 'Trash bags', group: 'Supplies & Accessories', claimedBy: null },
-  { id: 'i29', name: 'Brownies', group: 'Desserts', claimedBy: null },
-  { id: 'i30', name: 'Ice cream', group: 'Desserts', claimedBy: null },
+  {id:'i1', name:'Hot dogs',                  group:'Main Dishes'},
+  {id:'i2', name:'Hamburger patties',          group:'Main Dishes'},
+  {id:'i3', name:'Veggie burgers',             group:'Main Dishes'},
+  {id:'i4', name:'Buns (hot dog & hamburger)', group:'Main Dishes'},
+  {id:'i5', name:'Grilled chicken',            group:'Main Dishes'},
+  {id:'i6', name:'Corn on the cob',            group:'Side Dishes'},
+  {id:'i7', name:'Coleslaw',                   group:'Side Dishes'},
+  {id:'i8', name:'Baked beans',                group:'Side Dishes'},
+  {id:'i9', name:'Pasta salad',                group:'Side Dishes'},
+  {id:'i10',name:'Green salad',                group:'Side Dishes'},
+  {id:'i11',name:'Chips & dip',                group:'Side Dishes'},
+  {id:'i12',name:'Watermelon',                 group:'Side Dishes'},
+  {id:'i13',name:'Ketchup',                    group:'Condiments & Extras'},
+  {id:'i14',name:'Mustard',                    group:'Condiments & Extras'},
+  {id:'i15',name:'Relish',                     group:'Condiments & Extras'},
+  {id:'i16',name:'Mayonnaise',                 group:'Condiments & Extras'},
+  {id:'i17',name:'BBQ sauce',                  group:'Condiments & Extras'},
+  {id:'i18',name:'Sliced cheese',              group:'Condiments & Extras'},
+  {id:'i19',name:'Sliced onions & tomatoes',   group:'Condiments & Extras'},
+  {id:'i20',name:'Brownies',                   group:'Desserts'},
+  {id:'i21',name:'Ice cream',                  group:'Desserts'},
+  {id:'i22',name:'Paper plates & bowls',       group:'Supplies & Accessories'},
+  {id:'i23',name:'Plastic utensils',           group:'Supplies & Accessories'},
+  {id:'i24',name:'Napkins',                    group:'Supplies & Accessories'},
+  {id:'i25',name:'Cups',                       group:'Supplies & Accessories'},
+  {id:'i26',name:'Aluminum foil',              group:'Supplies & Accessories'},
+  {id:'i27',name:'Charcoal / lighter fluid',   group:'Supplies & Accessories'},
+  {id:'i28',name:'Bug spray',                  group:'Supplies & Accessories'},
+  {id:'i29',name:'Sunscreen',                  group:'Supplies & Accessories'},
+  {id:'i30',name:'Trash bags',                 group:'Supplies & Accessories'},
 ];
 
-const GROUP_ORDER = ['Main Dishes', 'Side Dishes', 'Condiments & Extras', 'Desserts', 'Supplies & Accessories'];
+let db, attRef, itemsRef;
+let state = { attendees:{}, items:{} };
+let currentUser = sessionStorage.getItem('bbq_user') || null;
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return { attendees: [], items: JSON.parse(JSON.stringify(DEFAULT_ITEMS)), nextId: 100 };
+// ── helpers ──────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function initials(n){ return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function avatarBg(n){
+  const c=['#c0dd97','#9FE1CB','#FAC775','#F5C4B3','#B5D4F4','#CECBF6'];
+  let h=0; for(let i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))&0xffff;
+  return c[h%c.length];
+}
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+function safeKey(n){ return n.replace(/[.#$[\]/\s]/g,'_'); }
+
+// ── storage abstraction (Firebase or localStorage fallback) ──
+function writeAtt(key, val){
+  if(CONFIGURED) attRef.child(key).set(val);
+  else { state.attendees[key]=val; demoSave(); render(); }
+}
+function delAtt(key){
+  if(CONFIGURED) attRef.child(key).remove();
+  else { delete state.attendees[key]; demoSave(); render(); }
+}
+function writeItem(id, val){
+  if(CONFIGURED) itemsRef.child(id).set(val);
+  else { state.items[id]=val; demoSave(); render(); }
+}
+function pushItem(item){
+  if(CONFIGURED){ const r=itemsRef.push(); item.id=r.key; r.set(item); }
+  else { const id='c'+Date.now(); item.id=id; state.items[id]=item; demoSave(); render(); }
+}
+function demoSave(){
+  try{ localStorage.setItem('bbq_demo_26', JSON.stringify({attendees:state.attendees,items:state.items})); }catch(e){}
 }
 
-function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
+// ── init ─────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  if(CONFIGURED){
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db       = firebase.database();
+    attRef   = db.ref(DB_PATH+'/attendees');
+    itemsRef = db.ref(DB_PATH+'/items');
 
-let state = loadState();
-let currentUser = sessionStorage.getItem('bbq_current_user') || null;
+    // Seed default items once
+    itemsRef.once('value', snap => {
+      if(!snap.exists()){
+        const obj={};
+        DEFAULT_ITEMS.forEach(i=>{ obj[i.id]={...i,claimedBy:null}; });
+        itemsRef.set(obj);
+      }
+    });
 
-function getInitials(name) {
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
-}
+    // Real-time listeners — Firebase pushes changes to ALL open browsers instantly
+    attRef.on('value',   snap=>{ state.attendees = snap.val()||{}; render(); });
+    itemsRef.on('value', snap=>{ state.items     = snap.val()||{}; render(); });
 
-function avatarColor(name) {
-  const colors = ['#c0dd97','#9FE1CB','#FAC775','#F5C4B3','#B5D4F4'];
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
-  return colors[h % colors.length];
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function addUser() {
-  const name = document.getElementById('newUserName').value.trim();
-  const guests = parseInt(document.getElementById('newUserGuests').value) || 0;
-  if (!name) { showToast('Please enter your name'); return; }
-  if (state.attendees.find(a => a.name.toLowerCase() === name.toLowerCase())) {
-    showToast('That name is already taken!'); return;
-  }
-  state.attendees.push({ name, guests });
-  saveState(state);
-  currentUser = name;
-  sessionStorage.setItem('bbq_current_user', name);
-  document.getElementById('newUserName').value = '';
-  document.getElementById('newUserGuests').value = '0';
-  showToast('Welcome, ' + name + '!');
-  render();
-}
-
-function loginExisting() {
-  const sel = document.getElementById('selectExistingUser');
-  const name = sel.value;
-  if (!name) { showToast('Please select your name'); return; }
-  currentUser = name;
-  sessionStorage.setItem('bbq_current_user', name);
-  showToast('Welcome back, ' + name + '!');
-  render();
-}
-
-function clearCurrentUser() {
-  currentUser = null;
-  sessionStorage.removeItem('bbq_current_user');
-  render();
-}
-
-function toggleItem(itemId) {
-  if (!currentUser) { showToast('Please select or add your name first'); return; }
-  const item = state.items.find(i => i.id === itemId);
-  if (!item) return;
-  if (item.claimedBy === currentUser) {
-    item.claimedBy = null;
-  } else if (item.claimedBy && item.claimedBy !== currentUser) {
-    showToast(item.claimedBy + ' is already bringing this!');
-    return;
+    // Connection indicator
+    db.ref('.info/connected').on('value', snap=>{
+      const on = snap.val();
+      $('liveDot').classList.toggle('off',!on);
+      $('liveLabel').textContent = on ? 'Live' : 'Offline';
+    });
   } else {
-    item.claimedBy = currentUser;
+    // Demo / local mode
+    $('setupBanner').style.display='block';
+    try{ const s=localStorage.getItem('bbq_demo_26'); if(s){ const p=JSON.parse(s); state=p; } }catch(e){}
+    if(!Object.keys(state.items||{}).length){
+      state.items={};
+      DEFAULT_ITEMS.forEach(i=>{ state.items[i.id]={...i,claimedBy:null}; });
+    }
+    $('liveDot').classList.add('off');
+    $('liveLabel').textContent='Local only';
+    render();
   }
-  saveState(state);
-  render();
+  $('loadingDiv').style.display='none';
+  $('app').style.display='block';
+  $('shareUrl').textContent=location.href;
+});
+
+// ── actions ──────────────────────────────────────────────────
+function addUser(){
+  const name   = $('newName').value.trim();
+  const guests = parseInt($('newGuests').value)||0;
+  if(!name){ toast('Please enter your name'); return; }
+  const dup = Object.values(state.attendees).find(a=>a.name.toLowerCase()===name.toLowerCase());
+  if(dup){ toast('That name is already taken!'); return; }
+  writeAtt(safeKey(name), {name, guests, joinedAt:Date.now()});
+  currentUser=name; sessionStorage.setItem('bbq_user',name);
+  $('newName').value=''; $('newGuests').value='0';
+  toast('Welcome, '+name+'! 🎉');
 }
 
-function addCustomItem() {
-  const name = document.getElementById('customItemName').value.trim();
-  const group = document.getElementById('customItemGroup').value;
-  if (!name) { showToast('Enter an item name'); return; }
-  const id = 'c' + (state.nextId++);
-  state.items.push({ id, name, group, claimedBy: null });
-  saveState(state);
-  document.getElementById('customItemName').value = '';
-  showToast('"' + name + '" added!');
-  render();
+function loginExisting(){
+  const name=$('pickSel').value;
+  if(!name){ toast('Please select your name'); return; }
+  currentUser=name; sessionStorage.setItem('bbq_user',name);
+  toast('Welcome back, '+name+'!'); render();
 }
 
-function removeAttendee(name) {
-  if (!confirm('Remove ' + name + ' from the list?')) return;
-  state.attendees = state.attendees.filter(a => a.name !== name);
-  state.items.forEach(i => { if (i.claimedBy === name) i.claimedBy = null; });
-  if (currentUser === name) { currentUser = null; sessionStorage.removeItem('bbq_current_user'); }
-  saveState(state);
-  render();
+function clearUser(){
+  currentUser=null; sessionStorage.removeItem('bbq_user'); render();
 }
 
-function copyShareLink() {
-  const url = window.location.href.split('?')[0];
-  navigator.clipboard.writeText(url).then(() => showToast('Link copied!')).catch(() => {
-    document.getElementById('shareUrl').select();
-    showToast('Copy the URL above');
+function toggleItem(id){
+  if(!currentUser){ toast('Select or add your name first'); return; }
+  const item=state.items[id]; if(!item) return;
+  if(item.claimedBy && item.claimedBy!==currentUser){ toast(item.claimedBy+' is already bringing this!'); return; }
+  writeItem(id, {...item, claimedBy: item.claimedBy===currentUser ? null : currentUser});
+}
+
+function addCustomItem(){
+  const name=$('customName').value.trim();
+  const group=$('customGroup').value;
+  if(!name){ toast('Enter an item name'); return; }
+  pushItem({name, group, claimedBy:null});
+  $('customName').value='';
+  toast('"'+name+'" added!');
+}
+
+function removeAttendee(name){
+  if(!confirm('Remove '+name+' from the list? Their claimed items will be freed.')) return;
+  Object.values(state.items).forEach(item=>{
+    if(item.claimedBy===name) writeItem(item.id,{...item,claimedBy:null});
   });
+  delAtt(safeKey(name));
+  if(currentUser===name) clearUser();
 }
 
-function render() {
-  const totalMembers = state.attendees.length;
-  const totalGuests = state.attendees.reduce((s, a) => s + (a.guests || 0), 0);
-  const totalPeople = totalMembers + totalGuests;
-  const totalItems = state.items.length;
-  const claimedItems = state.items.filter(i => i.claimedBy).length;
+function copyLink(){
+  navigator.clipboard.writeText(location.href)
+    .then(()=>toast('Link copied to clipboard!'))
+    .catch(()=>toast('Copy the URL from the box above'));
+}
 
-  document.getElementById('totalPeople').textContent = totalPeople;
-  document.getElementById('attendeeSub').textContent = totalMembers + ' member' + (totalMembers !== 1 ? 's' : '') + ' + ' + totalGuests + ' guest' + (totalGuests !== 1 ? 's' : '');
-  document.getElementById('itemsCovered').textContent = claimedItems + ' / ' + totalItems;
-  document.getElementById('itemsSub').textContent = (totalItems - claimedItems) + ' item' + ((totalItems - claimedItems) !== 1 ? 's' : '') + ' still needed';
+// ── render ───────────────────────────────────────────────────
+function render(){
+  const attendees = Object.values(state.attendees||{});
+  const items     = Object.values(state.items||{});
+  const members   = attendees.length;
+  const guests    = attendees.reduce((s,a)=>s+(a.guests||0),0);
+  const claimed   = items.filter(i=>i.claimedBy).length;
 
-  // Current user UI
-  const curDisplay = document.getElementById('currentUserDisplay');
-  const existSel = document.getElementById('existingUserSelect');
-  const addForm = document.getElementById('addUserForm');
-  const signedInAs = document.getElementById('signedInAs');
+  $('statPeople').textContent    = members+guests;
+  $('statPeopleSub').textContent = members+' member'+(members!==1?'s':'')+' + '+guests+' guest'+(guests!==1?'s':'');
+  $('statItems').textContent     = claimed+' / '+items.length;
+  $('statItemsSub').textContent  = (items.length-claimed)+' item'+(items.length-claimed!==1?'s':'')+' still needed';
 
-  if (currentUser) {
-    curDisplay.style.display = 'block';
-    document.getElementById('currentUserName').textContent = currentUser;
-    existSel.style.display = 'none';
-    addForm.style.display = 'none';
-    signedInAs.textContent = 'Checking off as: ' + currentUser;
+  // User section
+  if(currentUser){
+    $('curUserRow').style.display='block';
+    $('curUserName').textContent=currentUser;
+    $('pickUserRow').style.display='none';
+    $('addUserRow').style.display='none';
+    $('itemsHint').textContent='Checking off as: '+currentUser;
   } else {
-    curDisplay.style.display = 'none';
-    addForm.style.display = 'flex';
-    signedInAs.textContent = 'Sign in to claim items';
-    if (state.attendees.length > 0) {
-      existSel.style.display = 'block';
-      const sel = document.getElementById('selectExistingUser');
-      sel.innerHTML = '<option value="">-- Select your name --</option>';
-      state.attendees.forEach(a => {
-        const opt = document.createElement('option');
-        opt.value = a.name; opt.textContent = a.name;
-        sel.appendChild(opt);
+    $('curUserRow').style.display='none';
+    $('addUserRow').style.display='flex';
+    $('itemsHint').textContent='Select your name to claim items';
+    if(attendees.length){
+      $('pickUserRow').style.display='block';
+      const sel=$('pickSel');
+      sel.innerHTML='<option value="">-- Select your name --</option>';
+      attendees.sort((a,b)=>a.name.localeCompare(b.name)).forEach(a=>{
+        const o=document.createElement('option'); o.value=a.name; o.textContent=a.name; sel.appendChild(o);
       });
     } else {
-      existSel.style.display = 'none';
+      $('pickUserRow').style.display='none';
     }
   }
 
-  // Items by group
-  const groups = {};
-  GROUP_ORDER.forEach(g => groups[g] = []);
-  state.items.forEach(item => {
-    if (!groups[item.group]) groups[item.group] = [];
-    groups[item.group].push(item);
-  });
+  // Items
+  const groups={};
+  GROUP_ORDER.forEach(g=>groups[g]=[]);
+  items.forEach(item=>{ if(!groups[item.group]) groups[item.group]=[]; groups[item.group].push(item); });
 
-  const container = document.getElementById('itemsContainer');
-  container.innerHTML = '';
-  GROUP_ORDER.forEach(grp => {
-    const items = groups[grp];
-    if (!items || items.length === 0) return;
-    const gl = document.createElement('div');
-    gl.className = 'group-label';
-    gl.textContent = grp;
-    container.appendChild(gl);
-    const grid = document.createElement('div');
-    grid.className = 'items-grid';
-    items.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'item-row' + (item.claimedBy ? ' claimed' : '');
-      const checked = item.claimedBy === currentUser;
-      const otherclaim = item.claimedBy && item.claimedBy !== currentUser;
-      row.innerHTML = `
-        <input type="checkbox" ${checked ? 'checked' : ''} ${otherclaim ? 'disabled' : ''} onchange="toggleItem('${item.id}')" />
+  const cont=$('itemsContainer'); cont.innerHTML='';
+  GROUP_ORDER.forEach(grp=>{
+    const gItems=(groups[grp]||[]).sort((a,b)=>a.name.localeCompare(b.name));
+    if(!gItems.length) return;
+    const gl=document.createElement('div'); gl.className='group-label'; gl.textContent=grp; cont.appendChild(gl);
+    const grid=document.createElement('div'); grid.className='items-grid';
+    gItems.forEach(item=>{
+      const mine=item.claimedBy===currentUser, other=item.claimedBy&&!mine;
+      const row=document.createElement('div');
+      row.className='item-row'+(item.claimedBy?' claimed':'');
+      row.innerHTML=`<input type="checkbox" ${mine?'checked':''} ${other?'disabled':''} onchange="toggleItem('${item.id}')"/>
         <label onclick="toggleItem('${item.id}')">
           ${item.name}
-          ${item.claimedBy ? '<span class="claimed-by">' + (item.claimedBy === currentUser ? '✓ You' : '✓ ' + item.claimedBy) + '</span>' : ''}
+          ${item.claimedBy?'<span class="claimed-by">'+(mine?'✓ You':'✓ '+item.claimedBy)+'</span>':''}
         </label>`;
       grid.appendChild(row);
     });
-    container.appendChild(grid);
+    cont.appendChild(grid);
   });
 
   // Attendees
-  const aList = document.getElementById('attendeesList');
-  if (state.attendees.length === 0) {
-    aList.innerHTML = '<div style="font-size:14px; color:#888780;">No one signed up yet — be the first!</div>';
-  } else {
-    aList.innerHTML = '';
-    state.attendees.forEach(a => {
-      const myItems = state.items.filter(i => i.claimedBy === a.name).map(i => i.name);
-      const row = document.createElement('div');
-      row.className = 'attendee-row';
-      row.innerHTML = `
-        <div class="avatar" style="background:${avatarColor(a.name)}">${getInitials(a.name)}</div>
-        <div class="attendee-info">
-          <div class="attendee-name">${a.name}</div>
-          <div class="attendee-guests">${a.guests > 0 ? '+ ' + a.guests + ' guest' + (a.guests !== 1 ? 's' : '') : 'Just themselves'}</div>
-          ${myItems.length > 0 ? '<div class="attendee-items-list">Bringing: ' + myItems.join(', ') + '</div>' : ''}
-        </div>
-        <button class="btn btn-danger" onclick="removeAttendee('${a.name}')">Remove</button>`;
-      aList.appendChild(row);
-    });
-  }
-
-  document.getElementById('shareUrl').textContent = window.location.href.split('?')[0];
+  const aList=$('attendeesList');
+  if(!attendees.length){ aList.innerHTML='<div style="font-size:14px;color:#888780">No one signed up yet — be the first!</div>'; return; }
+  aList.innerHTML='';
+  attendees.sort((a,b)=>(a.joinedAt||0)-(b.joinedAt||0)).forEach(a=>{
+    const myItems=items.filter(i=>i.claimedBy===a.name).map(i=>i.name);
+    const row=document.createElement('div'); row.className='att-row';
+    row.innerHTML=`
+      <div class="avatar" style="background:${avatarBg(a.name)}">${initials(a.name)}</div>
+      <div class="att-info">
+        <div class="att-name">${a.name}</div>
+        <div class="att-guests">${a.guests>0?'+ '+a.guests+' guest'+(a.guests!==1?'s':''):'Just themselves'}</div>
+        ${myItems.length?'<div class="att-items">Bringing: '+myItems.join(', ')+'</div>':''}
+      </div>
+      <button class="btn btn-danger" onclick="removeAttendee(${JSON.stringify(a.name)})">Remove</button>`;
+    aList.appendChild(row);
+  });
 }
-
-render();
-
-// Poll for updates every 10 seconds (simulates multi-user sync on shared hosting)
-setInterval(() => {
-  const fresh = loadState();
-  const cur = JSON.stringify(state);
-  const nw = JSON.stringify(fresh);
-  if (cur !== nw) { state = fresh; render(); }
-}, 10000);
 </script>
 </body>
 </html>
