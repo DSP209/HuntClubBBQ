@@ -72,13 +72,16 @@
 
   .group-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#888780;margin:1rem 0 .5rem;padding-bottom:4px;border-bottom:.5px solid #e8e6de}
 
-  .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
-  .item-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;border:.5px solid #d3d1c7;background:#fafaf7;cursor:pointer;transition:background .12s,border-color .12s}
+  .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+  .item-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:.5px solid #d3d1c7;background:#fafaf7;cursor:pointer;transition:background .12s,border-color .12s}
   .item-row:hover{background:#f1efe8;border-color:#b4b2a9}
   .item-row.claimed{background:#eaf3de;border-color:#97c459}
   .item-row label{flex:1;font-size:14px;cursor:pointer;line-height:1.4}
   .item-row input[type=checkbox]{accent-color:#3B6D11;width:16px;height:16px;cursor:pointer;flex-shrink:0}
   .claimed-by{font-size:11px;color:#3B6D11;display:block;margin-top:1px;font-weight:500}
+  .qty-input{width:48px;padding:3px 5px;border:.5px solid #97c459;border-radius:6px;font-size:12px;background:#fff;text-align:center;outline:none;flex-shrink:0}
+  .qty-input:focus{border-color:#3B6D11}
+  .qty-badge{font-size:12px;color:#3B6D11;font-weight:600;white-space:nowrap;flex-shrink:0}
 
   .attendees-list{display:flex;flex-direction:column;gap:8px}
   .att-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#f5f4ef;border:.5px solid #d3d1c7}
@@ -319,12 +322,12 @@ window.addEventListener('load', () => {
     itemsRef.once('value', snap => {
       if(!snap.exists()){
         const obj={};
-        DEFAULT_ITEMS.forEach(i=>{ obj[i.id]={...i,claimedBy:null}; });
+        DEFAULT_ITEMS.forEach(i=>{ obj[i.id]={...i, claimedBy:null, qty:null}; });
         itemsRef.set(obj);
       }
     });
 
-    // Real-time listeners — Firebase pushes changes to ALL open browsers instantly
+    // Real-time listeners
     attRef.on('value',   snap=>{ state.attendees = snap.val()||{}; render(); });
     itemsRef.on('value', snap=>{ state.items     = snap.val()||{}; render(); });
 
@@ -340,7 +343,7 @@ window.addEventListener('load', () => {
     try{ const s=localStorage.getItem('bbq_demo_26'); if(s){ const p=JSON.parse(s); state=p; } }catch(e){}
     if(!Object.keys(state.items||{}).length){
       state.items={};
-      DEFAULT_ITEMS.forEach(i=>{ state.items[i.id]={...i,claimedBy:null}; });
+      DEFAULT_ITEMS.forEach(i=>{ state.items[i.id]={...i, claimedBy:null, qty:null}; });
     }
     $('liveDot').classList.add('off');
     $('liveLabel').textContent='Local only';
@@ -379,14 +382,22 @@ function toggleItem(id){
   if(!currentUser){ toast('Select or add your name first'); return; }
   const item=state.items[id]; if(!item) return;
   if(item.claimedBy && item.claimedBy!==currentUser){ toast(item.claimedBy+' is already bringing this!'); return; }
-  writeItem(id, {...item, claimedBy: item.claimedBy===currentUser ? null : currentUser});
+  const unclaiming = item.claimedBy===currentUser;
+  writeItem(id, {...item, claimedBy: unclaiming ? null : currentUser, qty: unclaiming ? null : (item.qty||1)});
+}
+
+// Called from the qty input — updates qty without touching claimedBy
+function updateQty(id, val){
+  const item=state.items[id]; if(!item) return;
+  const n=parseInt(val);
+  writeItem(id, {...item, qty: (isNaN(n)||n<1) ? 1 : n});
 }
 
 function addCustomItem(){
   const name=$('customName').value.trim();
   const group=$('customGroup').value;
   if(!name){ toast('Enter an item name'); return; }
-  pushItem({name, group, claimedBy:null});
+  pushItem({name, group, claimedBy:null, qty:null});
   $('customName').value='';
   toast('"'+name+'" added!');
 }
@@ -394,7 +405,7 @@ function addCustomItem(){
 function removeAttendee(name){
   if(!confirm('Remove '+name+' from the list? Their claimed items will be freed.')) return;
   Object.values(state.items).forEach(item=>{
-    if(item.claimedBy===name) writeItem(item.id,{...item,claimedBy:null});
+    if(item.claimedBy===name) writeItem(item.id,{...item, claimedBy:null, qty:null});
   });
   delAtt(safeKey(name));
   if(currentUser===name) clearUser();
@@ -457,11 +468,26 @@ function render(){
       const mine=item.claimedBy===currentUser, other=item.claimedBy&&!mine;
       const row=document.createElement('div');
       row.className='item-row'+(item.claimedBy?' claimed':'');
-      row.innerHTML=`<input type="checkbox" ${mine?'checked':''} ${other?'disabled':''} onchange="toggleItem('${item.id}')"/>
+
+      // Qty control: editable spinner for owner, read-only badge for others
+      let qtyHtml='';
+      if(mine){
+        qtyHtml=`<input type="number" class="qty-input" min="1" max="999" value="${item.qty||1}"
+          title="Quantity you're bringing"
+          onclick="event.stopPropagation()"
+          onchange="updateQty('${item.id}',this.value)"
+          onkeydown="event.stopPropagation()" />`;
+      } else if(other){
+        qtyHtml=`<span class="qty-badge">×${item.qty||1}</span>`;
+      }
+
+      row.innerHTML=`
+        <input type="checkbox" ${mine?'checked':''} ${other?'disabled':''} onchange="toggleItem('${item.id}')"/>
         <label onclick="toggleItem('${item.id}')">
           ${item.name}
           ${item.claimedBy?'<span class="claimed-by">'+(mine?'✓ You':'✓ '+item.claimedBy)+'</span>':''}
-        </label>`;
+        </label>
+        ${qtyHtml}`;
       grid.appendChild(row);
     });
     cont.appendChild(grid);
@@ -472,7 +498,8 @@ function render(){
   if(!attendees.length){ aList.innerHTML='<div style="font-size:14px;color:#888780">No one signed up yet — be the first!</div>'; return; }
   aList.innerHTML='';
   attendees.sort((a,b)=>(a.joinedAt||0)-(b.joinedAt||0)).forEach(a=>{
-    const myItems=items.filter(i=>i.claimedBy===a.name).map(i=>i.name);
+    const myItems=items.filter(i=>i.claimedBy===a.name)
+      .map(i=> (i.qty&&i.qty>1) ? `${i.name} ×${i.qty}` : i.name);
     const row=document.createElement('div'); row.className='att-row';
     row.innerHTML=`
       <div class="avatar" style="background:${avatarBg(a.name)}">${initials(a.name)}</div>
